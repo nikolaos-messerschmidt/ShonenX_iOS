@@ -12,13 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Init submodules
+        run: |
+          git submodule update --init --recursive packages/anymex_extension_bridge
+          git submodule update --init --recursive packages/commentum_client
+
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          flutter-version: 3.35.7
           cache: true
 
-      # Gleiches Problem wie bei dir: ohne Cache installiert CocoaPods bei
-      # jedem Lauf die komplette Trunk-Spec-Repo neu.
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
@@ -29,14 +32,26 @@ jobs:
           restore-keys: |
             pods-${{ runner.os }}-
 
-      - run: flutter pub get
+      - name: Create env file
+        run: |
+          cat > keys.json <<EOF
+          {
+            "ANILIST_CLIENT_ID": "${{ secrets.ANILIST_CLIENT_ID }}",
+            "ANILIST_CLIENT_SECRET": "${{ secrets.ANILIST_CLIENT_SECRET }}",
+            "MAL_CLIENT_ID": "${{ secrets.MAL_CLIENT_ID }}",
+            "MAL_CLIENT_SECRET": "${{ secrets.MAL_CLIENT_SECRET }}",
+            "SIMKL_CLIENT_ID": "${{ secrets.SIMKL_CLIENT_ID }}",
+            "SIMKL_CLIENT_SECRET": "${{ secrets.SIMKL_CLIENT_SECRET }}",
+            "COMMENTUM_API_URL": "${{ secrets.COMMENTUM_API_URL }}",
+            "RELEASE_REPO": "nikolaos-messerschmidt/ShonenX_iOS"
+          }
+          EOF
 
-      - run: flutter pub run build_runner build --delete-conflicting-outputs
+      - name: Get Dependencies
+        run: find . -name "pubspec.lock" -type f -delete && flutter pub upgrade
 
-      # --no-codesign: kein Apple Dev Account in der VM hinterlegt,
-      # Signing/Sideload passiert manuell danach.
       - name: Build iOS (unsigned)
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --dart-define-from-file=keys.json
 
       - name: Package as .ipa
         run: |
