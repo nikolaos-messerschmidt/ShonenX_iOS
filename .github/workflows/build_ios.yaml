@@ -50,6 +50,9 @@ jobs:
       - name: Get Dependencies
         run: find . -name "pubspec.lock" -type f -delete && flutter pub upgrade
 
+      - name: Add iOS platform support
+        run: flutter create --platforms=ios .
+
       - name: Build iOS (unsigned)
         run: flutter build ios --release --no-codesign --dart-define-from-file=keys.json
 
