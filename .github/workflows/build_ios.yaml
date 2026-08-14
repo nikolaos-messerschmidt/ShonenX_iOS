@@ -1,11 +1,14 @@
-name: Build iOS IPA (unsigned)
+name: iOS unsigned build
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-ios:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -13,21 +16,46 @@ jobs:
         with:
           flutter-version: '3.8.1'
           channel: 'stable'
+          cache: true
+
+      # Gleiches Problem wie bei dir: ohne Cache installiert CocoaPods bei
+      # jedem Lauf die komplette Trunk-Spec-Repo neu.
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cocoapods
+            ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            pods-${{ runner.os }}-
 
       - run: flutter pub get
+
       - run: flutter pub run build_runner build --delete-conflicting-outputs
 
-      - name: Build iOS (no codesign)
+      # --no-codesign: kein Apple Dev Account in der VM hinterlegt,
+      # Signing/Sideload passiert manuell danach.
+      - name: Build iOS (unsigned)
         run: flutter build ios --release --no-codesign
 
-      - name: Package unsigned IPA
+      - name: Package as .ipa
         run: |
-          mkdir -p build/ios/iphoneos/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
-          cd build/ios/iphoneos
-          zip -r ShonenX.ipa Payload
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -r ../../../shonenx-unsigned.ipa Payload
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ShonenX-unsigned-ipa
-          path: build/ios/iphoneos/ShonenX.ipa
+          name: shonenx-ios-unsigned
+          path: shonenx-unsigned.ipa
+          retention-days: 14
+
+      - name: Push to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-unsigned-${{ github.run_number }}
+          name: iOS unsigned build #${{ github.run_number }}
+          files: shonenx-unsigned.ipa
+          prerelease: true
