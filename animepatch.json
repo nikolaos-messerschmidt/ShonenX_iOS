@@ -1,0 +1,24 @@
+[
+    {
+        "name": "AnimeWave",
+        "id": 148203771,
+        "baseUrl": "https://animewave.to",
+        "lang": "en",
+        "typeSource": "single",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=256&domain=https://animewave.to",
+        "dateFormat": "",
+        "dateFormatLocale": "",
+        "isNsfw": false,
+        "hasCloudflare": false,
+        "sourceCodeUrl": "https://raw.githubusercontent.com/nikolaos-messerschmidt/ShonenX_iOS/refs/heads/main/animewave.js",
+        "apiUrl": "",
+        "version": "0.1.9",
+        "isManga": false,
+        "itemType": 1,
+        "isFullData": false,
+        "appMinVerReq": "0.5.0",
+        "additionalParams": "",
+        "sourceCodeLanguage": 1,
+        "notes": ""
+    }
+]
