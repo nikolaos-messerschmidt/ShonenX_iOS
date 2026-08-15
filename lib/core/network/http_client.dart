@@ -135,7 +135,15 @@ class HTTP {
     final uri = Uri.parse(url).replace(queryParameters: queryParameters);
     final req = await _client.openUrl(method, uri);
 
-    headers?.forEach(req.headers.set);
+    headers?.forEach((name, value) {
+      // Defensive: some upstream callers (JS extension bridge) may hand us
+      // a header value whose runtime type is actually a List instead of a
+      // String (e.g. accidentally serialized multi-value headers). Passing
+      // that straight into HttpHeaders.set can throw type errors deep in
+      // dart:io, so flatten it here first.
+      final dynamic v = value;
+      req.headers.set(name, v is List ? v.join(', ') : v);
+    });
 
     if (body != null) {
       final hasContentType =

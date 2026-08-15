@@ -9,11 +9,11 @@ import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 
 class DiscordRpcService {
-  static const String applicationId = '1435544312296505394';
+  static const String applicationId = '1538312253944889354';
   static const String _gatewayUrl =
       'wss://gateway.discord.gg/?v=10&encoding=json';
   static const String _appIconUrl =
-      'https://raw.githubusercontent.com/roshancodespace/ShonenX/refs/heads/main/assets/images/app_icon.png';
+      'https://img.icons8.com/color/1200/flutter.jpg';
 
   final _log = AppLogger.scope(DiscordRpcService);
 
