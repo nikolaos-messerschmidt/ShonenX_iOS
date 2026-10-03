@@ -22,7 +22,7 @@ const mangayomiSources = [
         "notes": "",
     },
 ];
-// V13
+// V14
 // AnimeWave (animewave.to) — 9anime/AniWave-family template with a
 // MegaPlay-only player backend.
 //
@@ -138,8 +138,9 @@ var MegaCrypto = (function () {
             // row 1: rotate right by 1
             t = state[13]; state[13] = state[9]; state[9] = state[5]; state[5] = state[1]; state[1] = t;
             // row 2: rotate right by 2
-            t = state[2]; state[2] = state[10]; state[10] = state[2];
-            t = state[14]; state[14] = state[6]; state[6] = state[14];
+            t = state[2]; state[2] = state[10]; state[10] = t;
+            t = state[6]; state[6] = state[14]; state[14] = t;
+
             // row 3: rotate right by 3 (= rotate left by 1)
             t = state[3]; state[3] = state[7]; state[7] = state[11]; state[11] = state[15]; state[15] = t;
         }
@@ -168,7 +169,7 @@ var MegaCrypto = (function () {
     }
 
     // ── AES-256-CBC decrypt, PKCS7 unpad. data/key/iv are byte arrays ──────
-    function aesCbcDecrypt(data, key, iv) {
+    function aesCbcDecrypt(data, key, iv, raw) {
         if (data.length === 0 || data.length % 16 !== 0) return null;
         var ctx = expandKey(key);
         var out = [];
@@ -181,6 +182,7 @@ var MegaCrypto = (function () {
             prev = block;
             out = out.concat(plain);
         }
+        if (raw) return out;
         // PKCS7 unpad
         if (out.length === 0) return null;
         var pad = out[out.length - 1];
@@ -213,8 +215,7 @@ var MegaCrypto = (function () {
         msg.push(0x80);
         while (msg.length % 64 !== 56) msg.push(0);
         // 64-bit length (assume < 2^32 bits)
-        msg.push(0); msg.push(0); msg.push(0); msg.push(0);
-        msg.push((bitLen / 0x100000000) & 0xff);
+        msg.push(0, 0, 0, 0); // obere 32 Bit der 64-Bit-Laenge
         msg.push((bitLen >>> 24) & 0xff);
         msg.push((bitLen >>> 16) & 0xff);
         msg.push((bitLen >>> 8) & 0xff);
