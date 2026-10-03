@@ -22,7 +22,7 @@ const mangayomiSources = [
         "notes": "",
     },
 ];
-// V10
+// V13
 // AnimeWave (animewave.to) — 9anime/AniWave-family template with a
 // MegaPlay-only player backend.
 //
